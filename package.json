@@ -1,0 +1,10 @@
+{
+    "name": "markdown-to-docx-converter",
+    "version": "1.0.0",
+    "description": "Converts Markdown with Mermaid and Excalidraw to DOCX.",
+    "private": true,
+    "dependencies": {
+      "@excalidraw/excalidraw": "^0.17.3",
+      "puppeteer": "^22.8.0"
+    }
+  }
