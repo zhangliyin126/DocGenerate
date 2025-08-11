@@ -44,33 +44,38 @@
     *   **虚线箭头 (Dashed Arrow)**: 用于表示辅助性、触发式或次要的信息流（如配置、状态反馈、辅助信号等）。
 *   **路由清晰**: 优先使用**直角连接线 (orthogonal connectors)**，并手动调整路由，避免线条交叉和混乱，确保数据流向一目了然。
 *   **线上标签**: 关键的数据流应在线条旁边或中间添加文本标签（如 `Odom Pose`, `Detected Objects`），以说明传递的数据内容。
+*   **箭头平行**: 箭头应尽量保证**平行或垂直**，因此要求**箭头两侧的element**也应该尽量保持中心平行或垂直对齐。
 
 ### 3.4. 文本元素 (Text Elements)
 
 这是本规范中**最重要**的技术要求，旨在确保图表的可解析性和自动化处理能力。
 
-*   **核心要求：所有文本标签必须作为独立的 `text` 元素存在，并与相应的父形状（如矩形）进行链接（link），而不是直接写入形状的 `text` 属性中。**
+*   **核心要求：所有文本标签必须作为独立的 `text` 元素存在，并与相应的父形状（如矩形）进行链接（boundElements和containerId），而不是直接写入形状的 `text` 属性中。**
 
 *   **目的**: 这样做可以确保文本和形状在数据层面解耦，便于脚本自动化处理、解析和修改图表内容，同时在 Excalidraw 编辑器中也能获得更好的编辑灵活性（例如，独立调整文本位置而不影响形状）。
 
-*   **操作方法**: 在 Excalidraw 中，先创建形状，再创建文本，然后使用 `Ctrl / Cmd + L` 或链接工具将文本链接到形状上。
-
 *   **示例**:
 
-    **✅ 正确示例：** 文本是一个独立的元素，通过 `link` 字段指向矩形的 `id`。
+    **✅ 正确示例：** 文本是一个独立的元素，通过 `containerId` 和 `boundElements` 字段互相指向父/子元素的 `id`。
 
     ```json
     // --- 形状元素 (父) ---
     {
-      "id": "Yd1B4v7wN",
+      "id": "MacekLaswcvUl8kOFMZxd",
       "type": "rectangle",
-      "text": "", // text 属性必须为空！
+      "boundElements": [
+        {
+          "type": "text",
+          "id": "AdagHdE5hX6gQ2fQeXF8F"
+        }
+      ],
       // ...其他属性...
     },
     // --- 文本元素 (子) ---
     {
-      "id": "hBf5rO_cT",
+      "id": "AdagHdE5hX6gQ2fQeXF8F",
       "type": "text",
+      "containerId": "MacekLaswcvUl8kOFMZxd",
       "text": "传感器时空匹配\n与对齐",
       "link": "Yd1B4v7wN", // 指向父元素的 id
       // ...其他属性...
@@ -86,6 +91,48 @@
       "type": "rectangle",
       "text": "鱼眼高精\n点线圆柱\n矩形检测", // 错误！文本不应在这里
       "link": null,
+      // ...其他属性...
+    }
+    ```
+
+*   **对于箭头的扩展**: 同样需要注意像arrow等的连接也要正确使用 `boundElements` 和 `startBinding`，示例：
+   
+    ```json
+    // --- 形状元素 (父) ---
+    {
+      "id": "KFfSvxXOiHS-6cE7A4N3x",
+      "type": "rectangle",
+      "boundElements": [
+        {
+          "id": "JmkPcwyqkXxcu_70o_cQv",
+          "type": "arrow"
+        }
+      ],
+      // ...其他属性...
+    },
+        {
+      "id": "4dhMjybHWtU3bsPS_JqA4",
+      "type": "rectangle",
+      "boundElements": [
+        {
+          "id": "JmkPcwyqkXxcu_70o_cQv",
+          "type": "arrow"
+        }
+      ],
+      // ...其他属性...
+    },
+    // --- 箭头元素 (子) ---
+    {
+      "startBinding": {
+        "elementId": "KFfSvxXOiHS-6cE7A4N3x",// 指向父元素的 id
+        "focus": -0.31267335386971307,
+        "gap": 2.66668701171875
+      },
+      "endBinding": {
+        "elementId": "4dhMjybHWtU3bsPS_JqA4",// 指向父元素的 id
+        "focus": -0.2728629641329067,
+        "gap": 1
+      }, 
       // ...其他属性...
     }
     ```
