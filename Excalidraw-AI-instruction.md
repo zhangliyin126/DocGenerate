@@ -36,6 +36,52 @@
 *   **逻辑容器**: 对于需要体现包含关系的复杂模块（如 `Super-Odom` 内部），应使用一个大的圆角矩形作为父容器，并将子模块和内部连线置于其中。
 *   **逻辑分组框**: 对于非物理包含，仅为逻辑上相关的模块集合，可使用**虚线矩形框**进行框选，以示其关联性。
 
+### 3.2.1. 形状通用属性 (General Shape Properties)
+
+所有形状（包括 `rectangle`, `ellipse`, `diamond` 等）都共享一套通用的JSON属性，用于定义其外观和行为。以下是核心属性的说明，所有AI生成代码时必须遵循这些结构：
+
+*   **`id`**: 字符串(string)。全局唯一的元素标识符。
+*   **`type`**: 字符串(string)。定义元素类型，如 `"rectangle"`, `"text"`, `"arrow"`。
+*   **`x`, `y`**: 数字(number)。元素左上角的绝对坐标。
+*   **`width`, `height`**: 数字(number)。元素的尺寸。
+*   **`strokeColor`**: 字符串(string)。边框颜色，十六进制代码 (e.g., `"#1e1e1e"`).
+*   **`backgroundColor`**: 字符串(string)。背景填充色，十六进制代码 (e.g., `"#ffffff"`).
+*   **`fillStyle`**: 字符串(string)。填充样式，通常为 `"solid"`。
+*   **`strokeWidth`**: 数字(number)。边框宽度。
+*   **`strokeStyle`**: 字符串(string)。边框样式，如 `"solid"` (实线), `"dashed"` (虚线)。
+*   **`roundness`**: 对象(object)或null。定义圆角，对于圆角矩形，其结构为 `{"type": 3}`。
+*   **`opacity`**: 数字(number)。透明度，范围 0-100。
+*   **`boundElements`**: 数组(array)或null。用于记录与此形状绑定的其他元素的ID和类型。这是实现形状与文本、箭头关联的关键。
+    *   例如: `[{"type": "text", "id": "AdagHdE5hX6gQ2fQeXF8F"}]` 表示一个文本元素绑定到了这个形状上。
+*   **`containerId`**: 字符串(string)或null。**此属性属于子元素（如 `text`）**，指向其父容器形状的 `id`。
+
+**示例 - 一个完整的矩形 (Rectangle) 元素:**
+
+```json
+{
+  "id": "de0xEycws0RapoqB8dGjN",
+  "type": "rectangle",
+  "x": 259.55,
+  "y": 223.44,
+  "width": 520.44,
+  "height": 388.44,
+  "strokeColor": "#1e1e1e",
+  "backgroundColor": "transparent",
+  "fillStyle": "solid",
+  "strokeWidth": 2,
+  "strokeStyle": "solid",
+  "roundness": { "type": 3 },
+  "opacity": 100,
+  "boundElements": [
+    {
+      "type": "text",
+      "id": "bn1LnTSiagS86i5y_90K9"
+    }
+  ],
+  // ... 其他次要属性 ...
+}
+```
+
 ### 3.3. 连接线与箭头 (Connectors & Arrows)
 
 *   **绑定节点**: 所有连接线的起点和终点**必须**与节点的边框进行**绑定 (bind)**。这确保在移动节点时，连接线能自动跟随调整。
@@ -145,9 +191,34 @@
 ### 3.5. 可编辑性与可维护性 (Editability & Maintainability)
 
 *   **纯粹矢量**: 严禁在图表中粘贴或嵌入任何原始位图（截图）。整个图表必须由 Excalidraw 的矢量元素（形状、线条、文本）构成。
-*   **善用分组**: 积极使用**组合 (Group, `Ctrl / Cmd + G`)** 功能。将逻辑上强相关的单元（如一个完整的子系统、一个父容器及其所有子模块）组合在一起，方便整体移动、复制和编辑。
+*   **善用分组**: 积极使用**组合 (Group)** 功能。将逻辑上强相关的单元（如一个完整的子系统、一个父容器及其所有子模块）组合在一起，方便整体移动、复制和编辑。
 *   **对象整洁**: 避免创建无用的、重叠的或隐藏的对象。定期检查并清理图表，保持其数据结构的干净。
 
 ---
 
 **总结**: 遵循此规范绘制的 Excalidraw 图，将成为团队宝贵的、可复用的工程资产。它不仅服务于当下的沟通演示，更能为未来的系统分析、文档自动化和知识沉淀打下坚实的基础。
+
+## 4. 文件格式要求 (File Format Requirements)
+
+为了确保 `.excalidraw` 文件可以被程序正确解析和加载，其顶层JSON结构必须遵循以下规范：
+
+*   **根对象 (Root Object)**: 整个文件内容必须是一个合法的JSON对象。
+*   **类型标识 (Type Identifier)**: JSON根对象必须包含一个`type`字段，其值必须为字符串 `"excalidraw"`，注意大小写要保持一致。这是识别文件的关键。
+    *   `"type": "excalidraw"`
+*   **元素数组 (Elements Array)**: 如果文件中存在 `elements` 字段，它必须是一个JSON数组 (Array)。该数组包含了画布上所有的形状、线条、文本等元素。
+*   **应用状态 (App State)**: 如果文件中存在 `appState` 字段，它必须是一个JSON对象 (Object)。该对象存储了画布的视图状态，如缩放、滚动位置等。
+
+**示例 - 一个合法的最小 .excalidraw 文件结构:**
+
+```json
+{
+  "type": "excalidraw",
+  "version": 2,
+  "source": "https://excalidraw.com",
+  "elements": [],
+  "appState": {
+    "gridSize": null,
+    "viewBackgroundColor": "#ffffff"
+  }
+}
+```
